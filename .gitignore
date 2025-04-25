@@ -19,3 +19,15 @@
 
 _ide/logs
 _ide/.wsdata
+
+# Clangd index/cache
+*/.cache/
+propagation_kernel_v1/.cache
+
+# HLS/Vivado build artifacts
+propagation_kernel_v1/bpm_prop_accel/
+propagation_kernel_v1/xcd.log
+
+# All Clangd index files anywhere
+*.idx
+

@@ -59,7 +59,7 @@ void bpm_1st_half(
     hls::x_complex<float> PHI_m_auxNL[DIM][DIM],
     float                 k,
     float                 n0,
-    float                 n2[DIM][DIM],
+    float                 n2,
     int                   NDX,
     int                   NDY,
     float                 DX,
@@ -106,7 +106,7 @@ void bpm_1st_half(
             float mag2 = PHI_m_auxNL[i][l].real()*PHI_m_auxNL[i][l].real()
                        + PHI_m_auxNL[i][l].imag()*PHI_m_auxNL[i][l].imag();
             // Dnl = -j * k * n2 * |phi|^2
-            Dnl_arr[i] = minus_j1 * hls::x_complex<float>(k * n2[i][l] * mag2, 0);
+            Dnl_arr[i] = minus_j1 * hls::x_complex<float>(k * n2 * mag2, 0);
 
             a[i] = alpha;
             c[i] = gamma;
@@ -154,7 +154,7 @@ void bpm_2nd_half(
     hls::x_complex<float> PHI_m_auxNL[DIM][DIM],
     float                 k,
     float                 n0,
-    float                 n2[DIM][DIM],
+    float                 n2,
     int                   NDX,
     int                   NDY,
     float                 DX,

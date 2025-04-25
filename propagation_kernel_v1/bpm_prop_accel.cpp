@@ -1,10 +1,8 @@
 #include <hls_x_complex.h>
 #include <ap_int.h>
+#include "bpm_split_step.h"
 
-#define DIM 46           // Beam profile dimensions (48x48)
 #define MAX_ND_Z 600     // Maximum number of z-steps (NDZ)
-
-
 
 
 extern "C" {

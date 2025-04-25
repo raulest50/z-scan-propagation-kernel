@@ -4,7 +4,7 @@
 
 #include <hls_x_complex.h>
 
-#define DIM 46
+#define DIM 47
 
 // First half–step: diffraction + Kerr nonlinearity (with TBC)
 void bpm_1st_half(
@@ -12,7 +12,7 @@ void bpm_1st_half(
     hls::x_complex<float> PHI_m_auxNL[DIM][DIM],
     float                 k,
     float                 n0,
-    float                 n2[DIM][DIM],
+    float                 n2,
     int                   NDX,
     int                   NDY,
     float                 DX,
@@ -27,7 +27,7 @@ void bpm_2nd_half(
     hls::x_complex<float> PHI_m_auxNL[DIM][DIM],
     float                 k,
     float                 n0,
-    float                 n2[DIM][DIM],
+    float                 n2,
     int                   NDX,
     int                   NDY,
     float                 DX,
