@@ -1,9 +1,11 @@
 #include <hls_x_complex.h>
 #include <ap_int.h>
 
-#define DIM 48           // Beam profile dimensions (48x48)
+#define DIM 46           // Beam profile dimensions (48x48)
 #define MAX_ND_Z 600     // Maximum number of z-steps (NDZ)
-#define MAX_NPTS_Z_SAVE 15  // Maximum number of z-slices to save
+
+
+
 
 extern "C" {
 
@@ -50,15 +52,6 @@ void bpm_prop_accel(
 
 }
 
-
-
-void bpm_1st_half(){
-    
-}
-
-void bpm_2nd_half(){
-    
-}
 
 
 }
