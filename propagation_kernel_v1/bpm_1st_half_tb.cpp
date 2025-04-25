@@ -2,8 +2,11 @@
 #include <iostream>
 #include <fstream>
 #include <complex>
+#include <cmath>
 #include <cstdlib>
-#include "bpm_split_step.h"  // defines DIM and bpm_1st_half, includes <hls_x_complex.h>
+#include <cstdio>                    // for fprintf
+#include "bpm_split_step.h"         // defines DIM and bpm_1st_half, includes <hls_x_complex.h>
+#include "test_utils.h"
 
 const int NDX = 46;
 const int NDY = 46;
@@ -14,48 +17,19 @@ const float k   = 7853981.6339f;
 const float n0  = 1.0f;
 const float n2  = 2.5e-20f;
 
-// Read a DIM×DIM complex matrix from disk into a std::complex array
-void read_complex_matrix(const char* fn, std::complex<float> M[DIM][DIM]) {
-    std::ifstream in(fn);
-    if (!in) {
-        std::cerr << "Error: cannot open " << fn << std::endl;
-        std::exit(1);
-    }
-    for (int j = 0; j <= NDY; ++j) {
-        for (int i = 0; i <= NDX; ++i) {
-            float re, im;
-            in >> re >> im;
-            M[i][j] = {re, im};
-        }
-    }
-    in.close();
-}
 
-// Write a DIM×DIM hls::x_complex matrix to disk
-void write_complex_matrix(const char* fn, const hls::x_complex<float> M[DIM][DIM]) {
-    std::ofstream out(fn);
-    if (!out) {
-        std::cerr << "Error: cannot write " << fn << std::endl;
-        std::exit(1);
-    }
-    for (int j = 0; j <= NDY; ++j) {
-        for (int i = 0; i <= NDX; ++i) {
-            out << M[i][j].real() << " "
-                << M[i][j].imag() << "\n";
-        }
-    }
-    out.close();
-}
-
-int main() {
-    // 1) Allocate host‐side std::complex buffers and HLS x_complex buffers
+int bpm_1sth_only_test() {
+    std::fprintf(stdout, "SIMULATION START *********************   \n");
+    std::fprintf(stdout, " -_-\n");
+    // Host buffers
     static std::complex<float>    PHI_m_std[DIM][DIM];
     static std::complex<float>    PHI_auxNL_std[DIM][DIM];
+    // HLS buffers
     static hls::x_complex<float>  PHI_m[DIM][DIM];
     static hls::x_complex<float>  PHI_auxNL[DIM][DIM];
     static hls::x_complex<float>  PHI_half[DIM][DIM];
 
-    // 2) Read inputs from absolute paths
+    // 1) Read inputs
     read_complex_matrix(
       "C:/Vws/z_scan_acceleration_ovr/propagation_kernel_v1/bpm_1st_h_testfiles/phi_m0.dat",
       PHI_m_std);
@@ -63,51 +37,68 @@ int main() {
       "C:/Vws/z_scan_acceleration_ovr/propagation_kernel_v1/bpm_1st_h_testfiles/phi_aux.dat",
       PHI_auxNL_std);
 
-    // 3) Debug print first 3×3 of PHI_m_std
-    std::cout << "PHI_m_std[0..2][0..2]:\n";
-    for (int j = 0; j < 3; ++j) {
-        for (int i = 0; i < 3; ++i) {
-            auto &c = PHI_m_std[i][j];
-            std::cout << "(" << c.real() << "," << c.imag() << ") ";
-        }
-        std::cout << "\n";
-    }
-    std::cout << std::flush;
+    // 2) Print host‐side inputs
+    printMatrix("PHI_m_std",     PHI_m_std);
+    printMatrix("PHI_auxNL_std", PHI_auxNL_std);
 
-    // 4) Convert to HLS types
-    for (int j = 0; j <= NDY; ++j) {
+    // 3) Convert to HLS types
+    for (int j = 0; j <= NDY; ++j)
+      for (int i = 0; i <= NDX; ++i) {
+        PHI_m    [i][j] = hls::x_complex<float>(
+                            PHI_m_std[i][j].real(),
+                            PHI_m_std[i][j].imag());
+        PHI_auxNL[i][j] = hls::x_complex<float>(
+                            PHI_auxNL_std[i][j].real(),
+                            PHI_auxNL_std[i][j].imag());
+      }
+
+    // 4) Call kernel
+    bpm_1st_half(PHI_m, PHI_auxNL, k, n0, n2, NDX, NDY, DX, DY, DZ, PHI_half);
+
+    // 5) Print HLS output
+    printMatrix("PHI_half", PHI_half);
+
+    // 6) Write simulation output
+    const char* out_fn =
+      "C:/Vws/z_scan_acceleration_ovr/propagation_kernel_v1/bpm_1st_h_testfiles/phi_half_csim.dat";
+    write_complex_matrix(out_fn, PHI_half);
+
+    // 7) Read Python reference and print & metric
+    static std::complex<float> PHI_ref[DIM][DIM];
+    {
+      std::ifstream in(
+        "C:/Vws/z_scan_acceleration_ovr/propagation_kernel_v1/bpm_1st_h_testfiles/phi_half_ref.dat"
+      );
+      if (!in) {
+        std::fprintf(stderr, "Error: cannot open reference file\n");
+        return 1;
+      }
+      for (int j = 0; j <= NDY; ++j)
         for (int i = 0; i <= NDX; ++i) {
-            PHI_m[i][j]     = hls::x_complex<float>(PHI_m_std[i][j].real(),
-                                                     PHI_m_std[i][j].imag());
-            PHI_auxNL[i][j] = hls::x_complex<float>(PHI_auxNL_std[i][j].real(),
-                                                     PHI_auxNL_std[i][j].imag());
+          float re, im;
+          in >> re >> im;
+          PHI_ref[i][j] = {re, im};
         }
     }
+    printMatrix("PHI_ref", PHI_ref);
 
-    // 5) Invoke the kernel
-    bpm_1st_half(
-      PHI_m, PHI_auxNL,
-      k, n0, n2,
-      NDX, NDY, DX, DY, DZ,
-      PHI_half
-    );
-
-    // 6) Debug print first 3×3 of PHI_half
-    std::cout << "PHI_half[0..2][0..2]:\n";
-    for (int j = 0; j < 3; ++j) {
-        for (int i = 0; i < 3; ++i) {
-            auto &c = PHI_half[i][j];
-            std::cout << "(" << c.real() << "," << c.imag() << ") ";
-        }
-        std::cout << "\n";
+    // 8) Compute and print error metrics
+    double sum_sq = 0.0, max_err = 0.0;
+    for (int j = 0; j <= NDY; ++j) {
+      for (int i = 0; i <= NDX; ++i) {
+        double dre = double(PHI_half[i][j].real()) - PHI_ref[i][j].real();
+        double dim = double(PHI_half[i][j].imag()) - PHI_ref[i][j].imag();
+        double err = std::hypot(dre, dim);
+        sum_sq += err*err;
+        if (err > max_err) max_err = err;
+      }
     }
-    std::cout << std::flush;
-
-    // 7) Write out the result
-    write_complex_matrix(
-      "C:/Vws/z_scan_acceleration_ovr/propagation_kernel_v1/bpm_1st_h_testfiles/phi_half_csim.dat",
-      PHI_half
+    double rms = std::sqrt(sum_sq / double((NDX+1)*(NDY+1)));
+    std::fprintf(stdout,
+      "\nMax abs error = %.6e, RMS error = %.6e\n",
+      max_err, rms
     );
+    fflush(stdout);
 
-    return 0;  // report success so CSIM passes
+    return 0;
 }

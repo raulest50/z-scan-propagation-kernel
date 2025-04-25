@@ -33,8 +33,32 @@
       "-fhls-tb",
       "-hls-sim-headers-dir=C:\\Xilinx\\Vitis\\2024.2\\include",
       "-c",
+      "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\test_utils.cpp"
+    ],
+    "file": "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\test_utils.cpp"
+  },
+  {
+    "directory": "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1",
+    "arguments": [
+      "C:\\Xilinx\\Vitis\\2024.2\\vcxx\\libexec\\clang++.exe",
+      "--sysroot=C:\\Xilinx\\Vitis\\2024.2\\tps\\mingw\\10.0.0\\win64.o\\nt",
+      "-fhls-tb",
+      "-hls-sim-headers-dir=C:\\Xilinx\\Vitis\\2024.2\\include",
+      "-c",
       "C:/Vws/z_scan_acceleration_ovr/propagation_kernel_v1/bpm_1st_half_tb.cpp"
     ],
     "file": "C:/Vws/z_scan_acceleration_ovr/propagation_kernel_v1/bpm_1st_half_tb.cpp"
+  },
+  {
+    "directory": "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1",
+    "arguments": [
+      "C:\\Xilinx\\Vitis\\2024.2\\vcxx\\libexec\\clang++.exe",
+      "--sysroot=C:\\Xilinx\\Vitis\\2024.2\\tps\\mingw\\10.0.0\\win64.o\\nt",
+      "-fhls-tb",
+      "-hls-sim-headers-dir=C:\\Xilinx\\Vitis\\2024.2\\include",
+      "-c",
+      "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\main_test_bench.cpp"
+    ],
+    "file": "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\main_test_bench.cpp"
   }
 ]
