@@ -8,6 +8,19 @@
       "-hls-syn-headers-dir=C:\\Xilinx\\Vitis\\2024.2\\common\\technology\\autopilot",
       "-fhlstoplevel=bpm_prop_accel",
       "-c",
+      "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\step_propagators.cpp"
+    ],
+    "file": "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\step_propagators.cpp"
+  },
+  {
+    "directory": "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1",
+    "arguments": [
+      "C:\\Xilinx\\Vitis\\2024.2\\vcxx\\libexec\\clang++.exe",
+      "--sysroot=C:\\Xilinx\\Vitis\\2024.2\\tps\\mingw\\10.0.0\\win64.o\\nt",
+      "-fhls",
+      "-hls-syn-headers-dir=C:\\Xilinx\\Vitis\\2024.2\\common\\technology\\autopilot",
+      "-fhlstoplevel=bpm_prop_accel",
+      "-c",
       "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\bpm_prop_accel.cpp"
     ],
     "file": "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\bpm_prop_accel.cpp"
