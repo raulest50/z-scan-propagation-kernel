@@ -1,6 +1,10 @@
 // step_propagators.cpp
 #include "step_propagators.h"
-#include <hls_math.h>
+#if __has_include(<hls_math.h>)
+#  include <hls_math.h>
+#else
+#  include "hls_stub.h"
+#endif
 
 const float eps         = 1e-12f;             // Epsilon para estabilidad
 const float k           = 10681416.0f;        // Número de onda

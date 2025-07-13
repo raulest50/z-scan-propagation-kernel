@@ -1,10 +1,16 @@
 #ifndef STEP_PROPAGATORS_H
 #define STEP_PROPAGATORS_H
 
-#include <hls_x_complex.h>
-#include <hls_math.h>
+#if __has_include(<hls_x_complex.h>)
+#  include <hls_x_complex.h>
+#  include <hls_math.h>
+#else
+#  include "hls_stub.h"
+#endif
 
+#ifndef DIM
 #define DIM 256
+#endif
 
 typedef hls::x_complex<float> complex_t;
 
