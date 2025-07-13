@@ -28,7 +28,9 @@ void printMatrix(const char* name,
 
 // Explicit instantiations
 template void printMatrix<std::complex<float>>(const char*, std::complex<float>[DIM][DIM], int, int);
+#ifndef HLS_STUB_H
 template void printMatrix<hls::x_complex<float>>(const char*, hls::x_complex<float>[DIM][DIM], int, int);
+#endif
 
 // -----------------------------------------------------------------------------
 // read_complex_matrix
