@@ -274,10 +274,16 @@ void propagation_step(
     #pragma HLS INTERFACE s_axilite port=return bundle=CTRL
     #pragma HLS INTERFACE m_axi     port=phi_in  offset=slave bundle=G_MEM
     #pragma HLS INTERFACE m_axi     port=phi_out offset=slave bundle=G_MEM
+    #pragma HLS bind_storage variable=phi_in  type=ram_1p impl=uram
+    #pragma HLS bind_storage variable=phi_out type=ram_1p impl=uram
     #pragma HLS DATAFLOW
 
     static complex_t tmp1[DIM][DIM], tmp2[DIM][DIM];
     static complex_t tmp3[DIM][DIM], tmp4[DIM][DIM];
+    #pragma HLS bind_storage variable=tmp1 type=ram_1p impl=uram
+    #pragma HLS bind_storage variable=tmp2 type=ram_1p impl=uram
+    #pragma HLS bind_storage variable=tmp3 type=ram_1p impl=uram
+    #pragma HLS bind_storage variable=tmp4 type=ram_1p impl=uram
     #pragma HLS ARRAY_PARTITION variable=tmp1 complete dim=2
     #pragma HLS ARRAY_PARTITION variable=tmp2 complete dim=2
     #pragma HLS ARRAY_PARTITION variable=tmp3 complete dim=2
