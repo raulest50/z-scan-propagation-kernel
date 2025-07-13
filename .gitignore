@@ -31,3 +31,4 @@ propagation_kernel_v1/xcd.log
 # All Clangd index files anywhere
 *.idx
 
+.idea
