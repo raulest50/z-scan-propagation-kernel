@@ -4,7 +4,7 @@
 
 #include <complex>
 #include <cstdio>
-#include "bpm_split_step.h"   // defines DIM
+#include "step_propagators.h"   // defines DIM
 #include <hls_x_complex.h>     // defines hls::x_complex
 
 // Print the top-left maxR×maxC block of a DIM×DIM complex matrix
