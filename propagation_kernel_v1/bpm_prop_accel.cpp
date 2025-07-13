@@ -1,6 +1,16 @@
 #include "step_propagators.h"
 #include <ap_int.h>
 
+// Size of one DIM x DIM complex matrix used by the AXI interfaces
+#ifndef MATRIX_SIZE
+#define MATRIX_SIZE (DIM*DIM)
+#endif
+
+// Number of propagation steps along the Z axis
+#ifndef Nz
+#define Nz 120
+#endif
+
 
 extern "C" {
 
