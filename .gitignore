@@ -32,3 +32,5 @@ propagation_kernel_v1/xcd.log
 *.idx
 
 .idea
+
+.junie/temp
