@@ -26,6 +26,21 @@ static int read_complex_matrix_dyn(const char* fn,
     return n;
 }
 
+// Helper to read a 1-D complex vector from ASCII file.
+static int read_complex_vector(const char* fn,
+                               std::vector<complex_t>& data)
+{
+    std::ifstream in(fn);
+    if (!in) {
+        std::perror("fopen");
+        std::exit(1);
+    }
+    float re, im;
+    while (in >> re >> im)
+        data.emplace_back(re, im);
+    return data.size();
+}
+
 // Copy data into a DIMxDIM matrix (zero padded)
 static void load_into(const std::vector<complex_t>& src, int n,
                       complex_t dst[DIM][DIM])
@@ -50,6 +65,20 @@ static float rms_region(const complex_t A[DIM][DIM],
             sum_sq += double(dre*dre + dim*dim);
         }
     return std::sqrt(sum_sq / double(n*n));
+}
+
+// Compute RMS error between two vectors
+static float rms_vector(const complex_t* A,
+                        const complex_t* B,
+                        int n)
+{
+    double sum_sq = 0.0;
+    for (int i = 0; i < n; ++i) {
+        float dre = A[i].real() - B[i].real();
+        float dim = A[i].imag() - B[i].imag();
+        sum_sq += double(dre*dre + dim*dim);
+    }
+    return std::sqrt(sum_sq / double(n));
 }
 
 static void run_adi_test(const char* name,
@@ -131,6 +160,63 @@ static void run_full_step(const char* name,
     else             std::printf("  [OK]\n");
 }
 
+// Validate compute_b_vector using reference vectors
+static void run_bvec_test(const char* name,
+                          const char* x0_file,
+                          const char* ref_file)
+{
+    std::vector<complex_t> buf_x0, buf_ref;
+    int n = read_complex_vector(x0_file, buf_x0);
+    int nref = read_complex_vector(ref_file, buf_ref);
+    assert(n == nref);
+
+    static complex_t X0[DIM], B[DIM], R[DIM];
+    for (int i = 0; i < DIM; ++i) X0[i] = complex_t{0.f,0.f};
+    for (int i = 0; i < n; ++i) X0[i] = buf_x0[i];
+    for (int i = 0; i < n; ++i) R[i]  = buf_ref[i];
+    for (int i = n; i < DIM; ++i) R[i] = complex_t{0.f,0.f};
+
+    compute_b_vector(complex_t{2.0f,0.0f},
+                     complex_t{2.0f,0.0f},
+                     complex_t{2.0f,0.0f},
+                     complex_t{-1.0f,0.0f},
+                     X0, B);
+
+    float rms = rms_vector(B, R, n);
+    std::printf("%s RMS error: %e\n", name, rms);
+    if (rms >= 1e-3f) std::printf("  [FAILED]\n");
+    else             std::printf("  [OK]\n");
+}
+
+// Validate custom_thomas_solver using reference vectors
+static void run_thomas_test(const char* name,
+                            const char* b_file,
+                            const char* ref_file)
+{
+    std::vector<complex_t> buf_b, buf_ref;
+    int n = read_complex_vector(b_file, buf_b);
+    int nref = read_complex_vector(ref_file, buf_ref);
+    assert(n == nref);
+
+    static complex_t Bvec[DIM], X[DIM], R[DIM];
+    for (int i = 0; i < DIM; ++i) Bvec[i] = complex_t{0.f,0.f};
+    for (int i = 0; i < DIM; ++i) X[i]    = complex_t{0.f,0.f};
+    for (int i = 0; i < n; ++i) Bvec[i] = buf_b[i];
+    for (int i = 0; i < n; ++i) R[i]    = buf_ref[i];
+    for (int i = n; i < DIM; ++i) R[i] = complex_t{0.f,0.f};
+
+    custom_thomas_solver(complex_t{2.0f,0.0f},
+                         complex_t{2.0f,0.0f},
+                         complex_t{2.0f,0.0f},
+                         complex_t{-1.0f,0.0f},
+                         Bvec, X);
+
+    float rms = rms_vector(X, R, n);
+    std::printf("%s RMS error: %e\n", name, rms);
+    if (rms >= 1e-3f) std::printf("  [FAILED]\n");
+    else             std::printf("  [OK]\n");
+}
+
 int main() {
     std::printf("Running step propagator tests...\n");
 
@@ -158,6 +244,14 @@ int main() {
                   half_2photon_absorption,
                   "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
                   "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\half_2photon_absorption_out.dat");
+
+    run_bvec_test("compute_b_vector",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\thomas\\bvec_x0.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\thomas\\bvec_result.dat");
+
+    run_thomas_test("custom_thomas_solver",
+                    "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\thomas\\thomas_b.dat",
+                    "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\thomas\\thomas_x_expected.dat");
 
     run_full_step("Propagation step 1",
                   "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\initial_field.dat",
