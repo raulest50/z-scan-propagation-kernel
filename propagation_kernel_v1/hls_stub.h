@@ -1,3 +1,4 @@
+// hls_stub.h
 #ifndef HLS_STUB_H
 #define HLS_STUB_H
 #include <complex>
