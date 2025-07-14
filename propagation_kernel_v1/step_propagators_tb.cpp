@@ -136,49 +136,48 @@ int main() {
 
     run_adi_test("ADI X",
                  adi_x,
-                 "propagation_kernel_v1/validationData/in.dat",
-                 "propagation_kernel_v1/validationData/adi_x_out.dat");
+                 "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
+                 "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\adi_x_out.dat");
 
     run_adi_test("ADI Y",
                  adi_y,
-                 "propagation_kernel_v1/validationData/in.dat",
-                 "propagation_kernel_v1/validationData/adi_y_out.dat");
+                 "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
+                 "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\adi_y_out.dat");
 
     run_half_test("Half nonlinear",
                   half_nonlinear,
-                  "propagation_kernel_v1/validationData/in.dat",
-                  "propagation_kernel_v1/validationData/half_nonlinear_out.dat");
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\half_nonlinear_out.dat");
 
     run_half_test("Half linear absorption",
                   half_linear_absorption,
-                  "propagation_kernel_v1/validationData/in.dat",
-                  "propagation_kernel_v1/validationData/half_linear_absorption_out.dat");
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\half_linear_absorption_out.dat");
 
     run_half_test("Half 2-photon absorption",
                   half_2photon_absorption,
-                  "propagation_kernel_v1/validationData/in.dat",
-                  "propagation_kernel_v1/validationData/half_2photon_absorption_out.dat");
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\half_2photon_absorption_out.dat");
 
     run_full_step("Propagation step 1",
-                  "propagation_kernel_v1/validationData/full_step_within_tissue/initial_field.dat",
-                  "propagation_kernel_v1/validationData/full_step_within_tissue/full_step_within_tissue_step_1.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\initial_field.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\full_step_within_tissue_step_1.dat",
                   1);
 
     run_full_step("Propagation step 40",
-                  "propagation_kernel_v1/validationData/full_step_within_tissue/initial_field.dat",
-                  "propagation_kernel_v1/validationData/full_step_within_tissue/full_step_within_tissue_step_40.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\initial_field.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\full_step_within_tissue_step_40.dat",
                   40);
 
     run_full_step("Propagation step 80",
-                  "propagation_kernel_v1/validationData/full_step_within_tissue/initial_field.dat",
-                  "propagation_kernel_v1/validationData/full_step_within_tissue/full_step_within_tissue_step_80.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\initial_field.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\full_step_within_tissue_step_80.dat",
                   80);
 
     run_full_step("Propagation step 120",
-                  "propagation_kernel_v1/validationData/full_step_within_tissue/initial_field.dat",
-                  "propagation_kernel_v1/validationData/full_step_within_tissue/full_step_within_tissue_step_120.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\initial_field.dat",
+                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\full_step_within_tissue_step_120.dat",
                   120);
 
     return 0;
 }
-
