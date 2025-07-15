@@ -5,6 +5,7 @@
 #if __has_include(<hls_x_complex.h>)
 #  include <hls_x_complex.h>
 #  include <hls_math.h>
+#  include <hls_stream.h>
 #else
 #  include "hls_stub.h"
 #endif
@@ -70,28 +71,13 @@ void adi_y(
     complex_t phi_inter[DIM][DIM]  // Campo intermedio
 );
 
-/**
- * Aplica el efecto no lineal Kerr (half-step).
- */
-void half_nonlinear(
-    complex_t phi[DIM],      // Campo de entrada
-    complex_t phi_out[DIM]   // Campo de salida
-);
 
 /**
- * Aplica absorción lineal (half-step).
+ * Streaming version applying TPA, Kerr and linear attenuation.
  */
-void half_linear_absorption(
-    complex_t phi[DIM],      // Campo de entrada
-    complex_t phi_out[DIM]   // Campo de salida
-);
-
-/**
- * Aplica absorción de dos fotones (half-step).
- */
-void half_2photon_absorption(
-    complex_t phi[DIM],      // Campo de entrada
-    complex_t phi_out[DIM]   // Campo de salida
+void half_nonlin_ops(
+    hls::stream<complex_t>& in,
+    hls::stream<complex_t>& out
 );
 
 /**
