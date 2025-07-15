@@ -18,11 +18,10 @@ extern "C" {
 
 // The accelerator function for the propagation loop.
 // This function takes as input the initial beam profile (PHI_m0),
-// It returns the final propagated beam profile (PHI_m),
-// the saved intermediate profiles (PHI_m_alongZ), and the saved z positions (z_to_save).
+// It returns the final propagated beam profile (PHI_m) after 120 propagation steps.
 void bpm_prop_accel(
     hls::x_complex<float> PHI_m0[DIM][DIM],
-    hls::x_complex<float> PHI_m[DIM][DIM] // 
+    hls::x_complex<float> PHI_m[DIM][DIM]
     )
 {
     // Interface pragmas for AXI access:
@@ -34,14 +33,42 @@ void bpm_prop_accel(
 
     #pragma HLS INTERFACE s_axilite port=return bundle=control
 
-    for( int k = 0; k<Nz; k++ ){
-        
-        // aplicar Adix
-        // aplicar halfSteps
+    // Create local arrays for the propagation process
+    static complex_t current[DIM][DIM];
+    static complex_t next[DIM][DIM];
 
-        // aplicar Adiy
-        // aplicar HalfSteps
-        
+    // Bind to URAM for better performance
+    #pragma HLS bind_storage variable=current type=ram_1p impl=uram
+    #pragma HLS bind_storage variable=next type=ram_1p impl=uram
+
+    // Copy initial beam profile to current array
+    for (int j = 0; j < DIM; j++) {
+        for (int i = 0; i < DIM; i++) {
+            #pragma HLS PIPELINE II=1
+            current[i][j] = PHI_m0[i][j];
+        }
+    }
+
+    // Perform 120 propagation steps
+    for (int k = 0; k < Nz; k++) {
+        // Apply one complete propagation step
+        propagation_step(current, next);
+
+        // Copy result back to current for next iteration
+        for (int j = 0; j < DIM; j++) {
+            for (int i = 0; i < DIM; i++) {
+                #pragma HLS PIPELINE II=1
+                current[i][j] = next[i][j];
+            }
+        }
+    }
+
+    // Copy final result to output array
+    for (int j = 0; j < DIM; j++) {
+        for (int i = 0; i < DIM; i++) {
+            #pragma HLS PIPELINE II=1
+            PHI_m[i][j] = current[i][j];
+        }
     }
 
 

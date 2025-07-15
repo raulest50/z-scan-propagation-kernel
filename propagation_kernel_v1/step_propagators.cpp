@@ -257,21 +257,31 @@ void propagation_step(
     #pragma HLS bind_storage variable=tmp2 type=ram_1p impl=uram
     #pragma HLS ARRAY_PARTITION variable=tmp1 complete dim=2
     #pragma HLS ARRAY_PARTITION variable=tmp2 complete dim=2
+    #pragma HLS ARRAY_PARTITION variable=tmp1 cyclic factor=4 dim=1
+    #pragma HLS ARRAY_PARTITION variable=tmp2 cyclic factor=4 dim=1
 
     // ADI in X direction
     adi_x(phi_in, tmp1);
 
     // Apply nonlinear operators on streaming form (X half-step)
     {
-        hls::stream<complex_t> s_in, s_out;
+        hls::stream<complex_t> s_in[4], s_out[4];
         #pragma HLS STREAM variable=s_in depth=8
         #pragma HLS STREAM variable=s_out depth=8
+        #pragma HLS ARRAY_PARTITION variable=s_in complete dim=1
+        #pragma HLS ARRAY_PARTITION variable=s_out complete dim=1
+
         for (int j = 0; j < DIM; j++) {
-            for (int i = 0; i < DIM; i++) {
+            for (int i = 0; i < DIM; i+=4) {
                 #pragma HLS PIPELINE II=1
-                s_in.write(tmp1[i][j]);
-                half_nonlin_ops(s_in, s_out);
-                tmp2[i][j] = s_out.read();
+
+                // Process 4 elements in parallel
+                for (int k = 0; k < 4 && (i+k) < DIM; k++) {
+                    #pragma HLS UNROLL
+                    s_in[k].write(tmp1[i+k][j]);
+                    half_nonlin_ops(s_in[k], s_out[k]);
+                    tmp2[i+k][j] = s_out[k].read();
+                }
             }
         }
     }
@@ -281,15 +291,23 @@ void propagation_step(
 
     // Apply nonlinear operators again (Y half-step)
     {
-        hls::stream<complex_t> s_in, s_out;
+        hls::stream<complex_t> s_in[4], s_out[4];
         #pragma HLS STREAM variable=s_in depth=8
         #pragma HLS STREAM variable=s_out depth=8
+        #pragma HLS ARRAY_PARTITION variable=s_in complete dim=1
+        #pragma HLS ARRAY_PARTITION variable=s_out complete dim=1
+
         for (int j = 0; j < DIM; j++) {
-            for (int i = 0; i < DIM; i++) {
+            for (int i = 0; i < DIM; i+=4) {
                 #pragma HLS PIPELINE II=1
-                s_in.write(tmp1[i][j]);
-                half_nonlin_ops(s_in, s_out);
-                phi_out[i][j] = s_out.read();
+
+                // Process 4 elements in parallel
+                for (int k = 0; k < 4 && (i+k) < DIM; k++) {
+                    #pragma HLS UNROLL
+                    s_in[k].write(tmp1[i+k][j]);
+                    half_nonlin_ops(s_in[k], s_out[k]);
+                    phi_out[i+k][j] = s_out[k].read();
+                }
             }
         }
     }
