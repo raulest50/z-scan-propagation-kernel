@@ -20,8 +20,8 @@ extern "C" {
 // This function takes as input the initial beam profile (PHI_m0),
 // It returns the final propagated beam profile (PHI_m) after 120 propagation steps.
 void bpm_prop_accel(
-    hls::x_complex<float> PHI_m0[DIM][DIM],
-    hls::x_complex<float> PHI_m[DIM][DIM]
+    complex_t PHI_m0[DIM][DIM],
+    complex_t PHI_m[DIM][DIM]
     )
 {
     // Interface pragmas for AXI access:
