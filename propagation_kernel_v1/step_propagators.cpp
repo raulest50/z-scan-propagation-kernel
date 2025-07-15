@@ -210,61 +210,31 @@ void adi_y(
     }
 }
 
-/**
- * Kerr non-linear effect (half-step).
- */
-void half_nonlinear(
-    complex_t phi[DIM],
-    complex_t phi_out[DIM]
-) {
-    #pragma HLS INTERFACE s_axilite port=return bundle=CTRL
-    #pragma HLS INTERFACE m_axi     port=phi     offset=slave bundle=GMEM0
-    #pragma HLS INTERFACE m_axi     port=phi_out offset=slave bundle=GMEM1
-
-    for (int i = 0; i < DIM; i++) {
-        #pragma HLS PIPELINE II=1
-        float abs_sq = phi[i].real()*phi[i].real() + phi[i].imag()*phi[i].imag();
-        float angle  = phase_const * abs_sq;
-        float sinv, cosv;
-        hls::sincos(angle, &sinv, &cosv);
-        phi_out[i] = phi[i] * complex_t{cosv, sinv};
-    }
-}
 
 /**
- * Linear absorption (half-step).
+ * Streaming nonlinear operators: two-photon absorption, Kerr and linear loss.
  */
-void half_linear_absorption(
-    complex_t phi[DIM],
-    complex_t phi_out[DIM]
-) {
-    #pragma HLS INTERFACE s_axilite port=return bundle=CTRL
-    #pragma HLS INTERFACE m_axi     port=phi     offset=slave bundle=GMEM0
-    #pragma HLS INTERFACE m_axi     port=phi_out offset=slave bundle=GMEM1
+void half_nonlin_ops(hls::stream<complex_t>& in,
+                     hls::stream<complex_t>& out) {
+#pragma HLS PIPELINE II=1
+    complex_t val = in.read();
 
-    for (int i = 0; i < DIM; i++) {
-        #pragma HLS PIPELINE II=1
-        phi_out[i] = phi[i] * attenuation;
-    }
-}
+    // Two-photon absorption
+    float abs_sq = val.real()*val.real() + val.imag()*val.imag();
+    float att_tpa = hls::exp(tpa_const * abs_sq);
+    val *= att_tpa;
 
-/**
- * Two-photon absorption (half-step).
- */
-void half_2photon_absorption(
-    complex_t phi[DIM],
-    complex_t phi_out[DIM]
-) {
-    #pragma HLS INTERFACE s_axilite port=return bundle=CTRL
-    #pragma HLS INTERFACE m_axi     port=phi     offset=slave bundle=GMEM0
-    #pragma HLS INTERFACE m_axi     port=phi_out offset=slave bundle=GMEM1
+    // Kerr phase shift using updated amplitude
+    abs_sq = val.real()*val.real() + val.imag()*val.imag();
+    float angle = phase_const * abs_sq;
+    float s, c;
+    hls::sincos(angle, &s, &c);
+    val *= complex_t{c, s};
 
-    for (int i = 0; i < DIM; i++) {
-        #pragma HLS PIPELINE II=1
-        float abs_sq = phi[i].real()*phi[i].real() + phi[i].imag()*phi[i].imag();
-        float att    = hls::exp(tpa_const * abs_sq);
-        phi_out[i]   = phi[i] * att;
-    }
+    // Linear absorption
+    val *= attenuation;
+
+    out.write(val);
 }
 
 /**
@@ -283,31 +253,44 @@ void propagation_step(
     #pragma HLS DATAFLOW
 
     static complex_t tmp1[DIM][DIM], tmp2[DIM][DIM];
-    static complex_t tmp3[DIM][DIM], tmp4[DIM][DIM];
     #pragma HLS bind_storage variable=tmp1 type=ram_1p impl=uram
     #pragma HLS bind_storage variable=tmp2 type=ram_1p impl=uram
-    #pragma HLS bind_storage variable=tmp3 type=ram_1p impl=uram
-    #pragma HLS bind_storage variable=tmp4 type=ram_1p impl=uram
     #pragma HLS ARRAY_PARTITION variable=tmp1 complete dim=2
     #pragma HLS ARRAY_PARTITION variable=tmp2 complete dim=2
-    #pragma HLS ARRAY_PARTITION variable=tmp3 complete dim=2
-    #pragma HLS ARRAY_PARTITION variable=tmp4 complete dim=2
 
-    // ADI X
+    // ADI in X direction
     adi_x(phi_in, tmp1);
-    // half-TPA X
-    half_2photon_absorption(tmp1[0], tmp2[0]); // unroll manual para cada fila
-    // half-Kerr X
-    half_nonlinear(tmp2[0], tmp3[0]);
-    // half-linear X
-    half_linear_absorption(tmp3[0], tmp4[0]);
 
-    // ADI Y
-    adi_y(tmp4, tmp1);
-    // half-TPA Y
-    half_2photon_absorption(tmp1[0], tmp2[0]);
-    // half-Kerr Y
-    half_nonlinear(tmp2[0], tmp3[0]);
-    // half-linear Y
-    half_linear_absorption(tmp3[0], phi_out[0]);
+    // Apply nonlinear operators on streaming form (X half-step)
+    {
+        hls::stream<complex_t> s_in, s_out;
+        #pragma HLS STREAM variable=s_in depth=8
+        #pragma HLS STREAM variable=s_out depth=8
+        for (int j = 0; j < DIM; j++) {
+            for (int i = 0; i < DIM; i++) {
+                #pragma HLS PIPELINE II=1
+                s_in.write(tmp1[i][j]);
+                half_nonlin_ops(s_in, s_out);
+                tmp2[i][j] = s_out.read();
+            }
+        }
+    }
+
+    // ADI in Y direction
+    adi_y(tmp2, tmp1);
+
+    // Apply nonlinear operators again (Y half-step)
+    {
+        hls::stream<complex_t> s_in, s_out;
+        #pragma HLS STREAM variable=s_in depth=8
+        #pragma HLS STREAM variable=s_out depth=8
+        for (int j = 0; j < DIM; j++) {
+            for (int i = 0; i < DIM; i++) {
+                #pragma HLS PIPELINE II=1
+                s_in.write(tmp1[i][j]);
+                half_nonlin_ops(s_in, s_out);
+                phi_out[i][j] = s_out.read();
+            }
+        }
+    }
 }

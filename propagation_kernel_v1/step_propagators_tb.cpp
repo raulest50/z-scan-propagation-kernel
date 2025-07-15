@@ -133,6 +133,15 @@ static void run_half_test(const char* name,
     else             std::printf("  [OK]\n");
 }
 
+static void half_nonlin_ops_array(complex_t in[DIM], complex_t out[DIM]) {
+    hls::stream<complex_t> s_in, s_out;
+    for (int i = 0; i < DIM; ++i) {
+        s_in.write(in[i]);
+        half_nonlin_ops(s_in, s_out);
+        out[i] = s_out.read();
+    }
+}
+
 static void run_full_step(const char* name,
                           const char* init_file,
                           const char* ref_file,
@@ -230,20 +239,11 @@ int main() {
                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\adi_y_out.dat");
 
-    run_half_test("Half nonlinear",
-                  half_nonlinear,
-                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
-                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\half_nonlinear_out.dat");
-
-    run_half_test("Half linear absorption",
-                  half_linear_absorption,
-                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
-                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\half_linear_absorption_out.dat");
-
-    run_half_test("Half 2-photon absorption",
-                  half_2photon_absorption,
+    run_half_test("Half nonlin ops",
+                  half_nonlin_ops_array,
                   "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
                   "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\half_2photon_absorption_out.dat");
+
 
     run_bvec_test("compute_b_vector",
                   "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\thomas\\bvec_x0.dat",

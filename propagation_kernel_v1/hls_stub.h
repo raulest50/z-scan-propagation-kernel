@@ -3,9 +3,22 @@
 #define HLS_STUB_H
 #include <complex>
 #include <cmath>
+#include <queue>
 namespace hls {
 template<typename T>
 using x_complex = std::complex<T>;
+
+// ---------------------------------------------------------------------
+// Minimal hls::stream stub used for host compilation
+// ---------------------------------------------------------------------
+template<typename T>
+class stream {
+    std::queue<T> q;
+public:
+    inline bool empty() const { return q.empty(); }
+    inline void write(const T& v) { q.push(v); }
+    inline T read() { T v = q.front(); q.pop(); return v; }
+};
 
 inline float exp(float x) { return std::exp(x); }
 inline double exp(double x) { return std::exp(x); }
