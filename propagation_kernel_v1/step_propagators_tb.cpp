@@ -231,13 +231,14 @@ int main() {
 
     run_adi_test("ADI X",
                  adi_x,
-                 "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
+                 "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\initial_field.dat",
                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\adi_x_out.dat");
 
     run_adi_test("ADI Y",
                  adi_y,
-                 "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\in.dat",
+                 "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\full_step_within_tissue\\initial_field.dat",
                  "C:\\Vws\\z_scan_acceleration_ovr\\propagation_kernel_v1\\validationData\\adi_y_out.dat");
+
 
     run_half_test("Half nonlin ops",
                   half_nonlin_ops_array,
