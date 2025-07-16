@@ -6,23 +6,23 @@
 #  include "hls_stub.h"
 #endif
 
-const float eps         = 1e-12f;             // Epsilon para estabilidad
-const float k           = 10681416.0f;        // Número de onda
-const float dz          = 1e-6f;              // Paso en z
-const float dy          = 1.7578e-7f;         // Paso en y
-const float dx          = 1.7578e-7f;         // Paso en x
-const float n0          = 1.36f;              // Índice de refracción lineal
-const float n2          = 3e-20f;             // Índice de refracción no lineal
-const float alpha       = 0.3f;               // Coeficiente de absorción lineal
-const float beta        = 1e-11f;             // Coeficiente de absorción de dos fotones
+const data_t eps         = data_t(1e-12f);             // Epsilon para estabilidad
+const data_t k           = data_t(10681416.0f);        // Número de onda
+const data_t dz          = data_t(1e-6f);              // Paso en z
+const data_t dy          = data_t(1.7578e-7f);         // Paso en y
+const data_t dx          = data_t(1.7578e-7f);         // Paso en x
+const data_t n0          = data_t(1.36f);              // Índice de refracción lineal
+const data_t n2          = data_t(3e-20f);             // Índice de refracción no lineal
+const data_t alpha       = data_t(0.3f);               // Coeficiente de absorción lineal
+const data_t beta        = data_t(1e-11f);             // Coeficiente de absorción de dos fotones
 
 // Factor para método ADI en X/Y
-complex_t ung = complex_t{0.0f, dz/(4.0f * k * dy * dy)};
+complex_t ung = complex_t(data_t(0.0f), dz/(data_t(4.0f) * k * dy * dy));
 
 // Constantes para efectos no lineal y absorción
-const float phase_const   = k * n2 * dz / 2.0f;
-const float attenuation   = hls::exp(-alpha * dz / 4.0f);
-const float tpa_const     = -beta  * dz / 4.0f;
+const data_t phase_const   = k * n2 * dz / data_t(2.0f);
+const data_t attenuation   = hls::exp(-alpha * dz / data_t(4.0f));
+const data_t tpa_const     = -beta  * dz / data_t(4.0f);
 
 
 /**
@@ -118,27 +118,27 @@ void adi_x(
         // Ratio frontera
         complex_t ratio0, ratioN;
         if (hls::hypot(phi_col[1].real(), phi_col[1].imag()) < eps) {
-            ratio0 = complex_t{1.0f, 0.0f};
+            ratio0 = complex_t{data_t(1.0f), data_t(0.0f)};
         } else {
             ratio0 = phi_col[0] / phi_col[1];
         }
         if (hls::hypot(phi_col[DIM-2].real(), phi_col[DIM-2].imag()) < eps) {
-            ratioN = complex_t{1.0f, 0.0f};
+            ratioN = complex_t{data_t(1.0f), data_t(0.0f)};
         } else {
             ratioN = phi_col[DIM-1] / phi_col[DIM-2];
         }
 
         // Matriz B
-        complex_t dp1_B = (-ung - ung) + complex_t{1.0f,0.0f} + ung * ratio0;
-        complex_t dp2_B = (-ung - ung) + complex_t{1.0f,0.0f} + ung * ratioN;
-        complex_t dp_B  = (-ung - ung) + complex_t{1.0f,0.0f};
+        complex_t dp1_B = (-ung - ung) + complex_t{data_t(1.0f),data_t(0.0f)} + ung * ratio0;
+        complex_t dp2_B = (-ung - ung) + complex_t{data_t(1.0f),data_t(0.0f)} + ung * ratioN;
+        complex_t dp_B  = (-ung - ung) + complex_t{data_t(1.0f),data_t(0.0f)};
         complex_t do_B  =  ung;
         compute_b_vector(dp_B, dp1_B, dp2_B, do_B, phi_col, b_vec);
 
         // Matriz A
-        complex_t dp1_A = ung + ung + complex_t{1.0f,0.0f} - ung * ratio0;
-        complex_t dp2_A = ung + ung + complex_t{1.0f,0.0f} - ung * ratioN;
-        complex_t dp_A  = ung + ung + complex_t{1.0f,0.0f};
+        complex_t dp1_A = ung + ung + complex_t{data_t(1.0f),data_t(0.0f)} - ung * ratio0;
+        complex_t dp2_A = ung + ung + complex_t{data_t(1.0f),data_t(0.0f)} - ung * ratioN;
+        complex_t dp_A  = ung + ung + complex_t{data_t(1.0f),data_t(0.0f)};
         complex_t do_A  = -ung;
         custom_thomas_solver(dp_A, dp1_A, dp2_A, do_A, b_vec, result);
 
@@ -178,27 +178,27 @@ void adi_y(
         // Ratio frontera
         complex_t ratio0, ratioN;
         if (hls::hypot(phi_row[1].real(), phi_row[1].imag()) < eps) {
-            ratio0 = complex_t{1.0f, 0.0f};
+            ratio0 = complex_t{data_t(1.0f), data_t(0.0f)};
         } else {
             ratio0 = phi_row[0] / phi_row[1];
         }
         if (hls::hypot(phi_row[DIM-2].real(), phi_row[DIM-2].imag()) < eps) {
-            ratioN = complex_t{1.0f,0.0f};
+            ratioN = complex_t{data_t(1.0f),data_t(0.0f)};
         } else {
             ratioN = phi_row[DIM-1] / phi_row[DIM-2];
         }
 
         // Matriz B
-        complex_t dp1_B = -ung - ung + complex_t{1.0f,0.0f} + ung * ratio0;
-        complex_t dp2_B = -ung - ung + complex_t{1.0f,0.0f} + ung * ratioN;
-        complex_t dp_B  = -ung - ung + complex_t{1.0f,0.0f};
+        complex_t dp1_B = -ung - ung + complex_t{data_t(1.0f),data_t(0.0f)} + ung * ratio0;
+        complex_t dp2_B = -ung - ung + complex_t{data_t(1.0f),data_t(0.0f)} + ung * ratioN;
+        complex_t dp_B  = -ung - ung + complex_t{data_t(1.0f),data_t(0.0f)};
         complex_t do_B  =  ung;
         compute_b_vector(dp_B, dp1_B, dp2_B, do_B, phi_row, b_vec);
 
         // Matriz A
-        complex_t dp1_A = ung + ung + complex_t{1.0f,0.0f} - ung * ratio0;
-        complex_t dp2_A = ung + ung + complex_t{1.0f,0.0f} - ung * ratioN;
-        complex_t dp_A  = ung + ung + complex_t{1.0f,0.0f};
+        complex_t dp1_A = ung + ung + complex_t{data_t(1.0f),data_t(0.0f)} - ung * ratio0;
+        complex_t dp2_A = ung + ung + complex_t{data_t(1.0f),data_t(0.0f)} - ung * ratioN;
+        complex_t dp_A  = ung + ung + complex_t{data_t(1.0f),data_t(0.0f)};
         complex_t do_A  = -ung;
         custom_thomas_solver(dp_A, dp1_A, dp2_A, do_A, b_vec, result);
 
@@ -220,14 +220,14 @@ void half_nonlin_ops(hls::stream<complex_t>& in,
     complex_t val = in.read();
 
     // Two-photon absorption
-    float abs_sq = val.real()*val.real() + val.imag()*val.imag();
-    float att_tpa = hls::exp(tpa_const * abs_sq);
+    data_t abs_sq = val.real()*val.real() + val.imag()*val.imag();
+    data_t att_tpa = hls::exp(tpa_const * abs_sq);
     val *= att_tpa;
 
     // Kerr phase shift using updated amplitude
     abs_sq = val.real()*val.real() + val.imag()*val.imag();
-    float angle = phase_const * abs_sq;
-    float s, c;
+    data_t angle = phase_const * abs_sq;
+    data_t s, c;
     hls::sincos(angle, &s, &c);
     val *= complex_t{c, s};
 

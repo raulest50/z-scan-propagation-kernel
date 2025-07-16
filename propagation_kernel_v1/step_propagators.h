@@ -9,27 +9,29 @@
 #else
 #  include "hls_stub.h"
 #endif
+#include <ap_fixed.h>
 
 #ifndef DIM
 #define DIM 256
 #endif
 
-typedef hls::x_complex<float> complex_t;
+using data_t   = ap_fixed<32,16>;
+using complex_t = hls::x_complex<data_t>;
 
 // Parámetros globales (definidos en step_propagators.cpp)
-extern const float eps;          // Epsilon para estabilidad
-extern const float k;            // Número de onda
-extern const float dz;           // Paso en z
-extern const float dy;           // Paso en y
-extern const float dx;           // Paso en x
-extern const float n0;           // Índice de refracción lineal
-extern const float n2;           // Índice de refracción no lineal
-extern const float alpha;        // Coeficiente de absorción lineal
-extern const float beta;         // Coeficiente de absorción de dos fotones
+extern const data_t eps;          // Epsilon para estabilidad
+extern const data_t k;            // Número de onda
+extern const data_t dz;           // Paso en z
+extern const data_t dy;           // Paso en y
+extern const data_t dx;           // Paso en x
+extern const data_t n0;           // Índice de refracción lineal
+extern const data_t n2;           // Índice de refracción no lineal
+extern const data_t alpha;        // Coeficiente de absorción lineal
+extern const data_t beta;         // Coeficiente de absorción de dos fotones
 extern complex_t ung;      // Factor para método ADI
-extern const float phase_const;  // Constante para cálculo de fase (Kerr)
-extern const float attenuation;  // Factor de atenuación lineal
-extern const float tpa_const;    // Constante para absorción de dos fotones
+extern const data_t phase_const;  // Constante para cálculo de fase (Kerr)
+extern const data_t attenuation;  // Factor de atenuación lineal
+extern const data_t tpa_const;    // Constante para absorción de dos fotones
 
 /**
  * Resuelve un sistema tridiagonal con estructura especial (Thomas).
