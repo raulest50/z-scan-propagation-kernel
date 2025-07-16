@@ -227,8 +227,15 @@ void half_nonlin_ops(hls::stream<complex_t>& in,
     // Kerr phase shift using updated amplitude
     abs_sq = val.real()*val.real() + val.imag()*val.imag();
     data_t angle = phase_const * abs_sq;
-    data_t s, c;
-    hls::sincos(angle, &s, &c);
+
+    // Usar ap_fixed<18, 2> para los parámetros de salida de sincos
+    ap_fixed<18, 2> s_temp, c_temp;
+    hls::sincos(angle, &s_temp, &c_temp);
+
+    // Convertir de vuelta a data_t
+    data_t s = data_t(s_temp);
+    data_t c = data_t(c_temp);
+
     val *= complex_t{c, s};
 
     // Linear absorption
